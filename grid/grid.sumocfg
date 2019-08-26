@@ -1,0 +1,26 @@
+<configuration>
+    <!--
+    <tripinfo-output.write-unfinished value="true" />
+    -->
+    <input>
+        <net-file value="grid.net.xml"/>
+        
+        <route-files value="grid.rou.xml"/>
+        <additional-files value="additional.xml"/>
+        <gui-settings-file value="grid.view.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="10000"/>
+    </time>
+    <output> 
+     
+        <tripinfo-output value="log/log.trip.xml" />
+        <!--
+        <vtk-output value="log/vtk/log.vtk.xml" />
+        <full-output value="log/log.full.xml" />
+        <fcd-output value="log/log.fcd.xml" />
+        <netstate-dump value="log/log.dump.xml" />
+        -->
+    </output>
+</configuration>

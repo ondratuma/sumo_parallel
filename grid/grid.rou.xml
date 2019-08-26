@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes>
+    <vType id="type1" accel="2.6" decel="4.5" sigma="0.5" length="5" maxSpeed="70" reroute="true">
+    <param key="has.rerouting.device" value="true"/>
+    <param key="device.rerouting.period" value="1.00"/>
+    </vType>
+    
+    
+</routes>

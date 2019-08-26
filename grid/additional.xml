@@ -1,0 +1,12 @@
+<additional>
+   <rerouter  id="rerouter1" edges="C2D2" probability="1">
+       <interval begin="0" end="2000">
+            <closingLaneReroute id="C2D2_0"/>
+            <closingLaneReroute id="C3D3_0"/>
+            <closingLaneReroute id="C1D1_0"/>
+       </interval>  
+   </rerouter>
+    
+    <edgeData id="python-basic" file="log.edgedata-closed.xml"/>   
+    <laneData id="python-lane" file="log.lanedata-closed.xml"/> 
+</additional>
