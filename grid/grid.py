@@ -9,6 +9,7 @@ import unicodedata
 
 
 current_milli_time = lambda: int(round(time.time() * 1000))
+
 def do_open(filename):
 	if not os.path.exists(os.path.dirname(filename)):
 		try:
@@ -27,24 +28,24 @@ else:
 	sys.exit("please declare environment variable 'SUMO_HOME'")
 
 import traci
-	#,"--device.rerouting.period","10","-l","plog2.txt","--device.rerouting.output","p-rerouting.txt","--device.rerouting.synchronize","--device.rerouting.threads","4"
+	
 
-#initiate traci
 
+################################################################## Set simulation variables / global settings
 simulation_settings = {
 	'width' : "750",
 	"height" : "1080",
 	"sumo_binary" : os.path.join(os.environ['SUMO_HOME'],'bin/sumo'),
 	"sumo_gui" : os.path.join(os.environ['SUMO_HOME'],'bin/sumo-gui'),
-	"coloring_mode" : 1,				#1 occupancy	#2 waiting time
 	"global_zoom" : 100,
 	"global_offset" : 100,
 	"route_correction_num_steps" : 10
-}									
+}						
+
+################################################################## Simulations object used to store simulation values 
 simulations = [
 	{
 		'name' : 'sim1',
-		
 		'settings' : [
 			simulation_settings['sumo_gui'],
 			"-c",
@@ -123,15 +124,8 @@ simulations = [
 		
 	}
 ]
-lane_colors = {
-	'closed' : '7',
-}
 
-step = 1
-
-
-
-
+################################################################## Set subscriptions to static objects (edges, lanes)
 for simulation in simulations:
 	traci.start(simulation['settings'],label=simulation['name']) 
 	lanes_ids = traci.lane.getIDList()
@@ -155,11 +149,16 @@ for simulation in simulations:
 			int("0x13",0),	# occupancy
 			int("0x7a",0)	# waiting time
 			})
+traci.simulation.subscribe(
+	{
+		int("0x72",0), # ids of loaded vehicles in last time step
+		int("0x7a",0)  # ids of arrived vehicles in last time step
+	})
 
 
 
 
-#manully adding vehicles
+################################################################## Adding vehicles
 last_vehicle_id = 0
 default_start_edge = "gneE0"
 default_end_edge = "gneE2"
@@ -174,6 +173,8 @@ def add_vehicle(id,start,stop):
 	traci.route.add(rou_id,route.edges)
 	traci.vehicle.add(veh_id,rou_id,"type1")
 ################################################################## Global timers
+timers = {}
+
 def timer_init (simulations):
 	global timers
 	for simulation in simulations:
@@ -297,6 +298,7 @@ output_table = [
 	[],														# 9
 	['TIMERS','--------','----------','----------']			# 10
 ]
+
 timers_row = 11
 
 def init_table(input_table):
@@ -304,17 +306,12 @@ def init_table(input_table):
 		for col_index, cell in enumerate(row):
 			if cell:
 				table.set_cell(row_index,col_index,cell)
-traci.simulation.subscribe(
-	{
-		int("0x72",0), # ids of loaded vehicles in last time step
-		int("0x7a",0)  # ids of arrived vehicles in last time step
-	})
+
+##################################################################
 simulation_on = True
-timers = {}
 init_table(output_table)
 timer_init(simulations)
-
-
+step = 1
 
 while step < 1000 and simulation_on:	
 	timer_start('step',simulation['name'])
@@ -345,6 +342,7 @@ while step < 1000 and simulation_on:
 				timer_start('e_10',simulation['name'])
 
 				################################################################## tripinfo xml 
+
 				timer_start('tripinfo',simulation['name'])
 				total_timeloss, num_lines = parse_xml_tripinfo(simulation['data']['tripinfo'])
 				simulation['data']['total_timeloss'] += total_timeloss
@@ -354,7 +352,9 @@ while step < 1000 and simulation_on:
 				except:
 					pass
 				timer_end('tripinfo',simulation['name'])
-				################################################################## get vehicle ids
+
+				################################################################## subscribe to currently loaded vehicles
+
 				timer_start('veh_init',simulation['name'])
 				vehicle_ids = traci.vehicle.getIDList()
 				sub_veh_ids(vehicle_ids)
@@ -362,6 +362,7 @@ while step < 1000 and simulation_on:
 
 
 				################################################################## vehicle iteration
+
 				timer_start('veh_run',simulation['name'])
 				simulation['data']['total_waiting_time'] = 0
 				simulation['data']['average_waiting_time'] = 0
@@ -369,7 +370,9 @@ while step < 1000 and simulation_on:
 				vehicles = simulation['data']['vehicles']
 				act_vehicles(vehicles)
 				timer_end('veh_run',simulation['name'])				
+
 				################################################################## meassure time for defined routes
+
 				timer_start('routes',simulation['name'])
 				simulation['data']['average_waiting_time'] = simulation['data']['total_waiting_time'] / len(vehicles)
 				for route in simulation['data']['routes']:
@@ -387,6 +390,7 @@ while step < 1000 and simulation_on:
 		
 	if step % 10 == 0:
 		################################################################## print all data
+
 		timer_start('printing',simulation['name'])
 		waiting_difference = simulations[0]['data']['average_waiting_time'] - simulations[1]['data']['average_waiting_time']
 		route_1_difference = simulations[0]['data']['routes'][0]['waitingtime'] - simulations[1]['data']['routes'][0]['waitingtime']
@@ -414,7 +418,9 @@ while step < 1000 and simulation_on:
 		table.set_cell(4,2,str("%.0f" % simulations[1]['data']['offset'][0]) + ":" +  str("%.0f" % simulations[1]['data']['offset'][1]))
 		timer_end('printing',simulation['name'])
 		timer_end('step',simulation['name'])
+
 		################################################################## Print timers
+
 		for key, simulation in enumerate(simulations):
 			timers_row = 11
 			for timer in timers[simulation['name']]:
@@ -422,12 +428,8 @@ while step < 1000 and simulation_on:
 				table.set_cell(timers_row,key + 1,timers[simulation['name']][timer][1] - timers[simulation['name']][timer][0])
 				timers_row += 1	
 		table.set_cell(0,1,str(step))
+
 		##################################################################
-	
-	
-
-	
-
 	table.refresh()
 	step += 1
 for simulation in simulations:
