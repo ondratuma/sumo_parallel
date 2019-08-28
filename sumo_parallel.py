@@ -4,16 +4,20 @@ import os
 import sys
 import time
 from xml.dom import minidom
-import unicodedata
-import curses
+
+os.chdir(sys.argv[1])
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 if 'SUMO_HOME' in os.environ:
+	sumo_home = os.environ['SUMO_HOME']
 	tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
 	sys.path.append(tools)
 else:
 	sys.exit("please declare environment variable 'SUMO_HOME'")
+
+_temp = __import__(sys.argv[1], globals(), locals(), [], 0)
+simulation_settings = _temp.simulation_settings
 
 import traci
 
@@ -31,78 +35,9 @@ def do_open(filename):
 
 
 # --------------------------------------------------------------- Set simulation variables / global settings
-def init_simulation_settings():
-	return {
-		'width': "750",
-		"height": "1080",
-		"sumo_binary": os.path.join(os.environ['SUMO_HOME'], 'bin/sumo'),
-		"sumo_gui": os.path.join(os.environ['SUMO_HOME'], 'bin/sumo-gui'),
-		"global_zoom": 100,
-		"global_offset": 100,
-		"route_correction_num_steps": 10
-	}
 
 
 # --------------------------------------------------------------- Simulations object used to store simulation values
-def init_simulations(simulation_settings):
-	return [
-		{
-			'name': 'sim1',
-			'settings': [
-				simulation_settings['sumo_gui'],
-				"-c",
-				"grid.sumocfg",
-				"--window-size",
-				simulation_settings['width'] + "," + simulation_settings['height'],
-				"--window-pos",
-				"0,0",
-				"--start",
-				"true",
-				"--output-prefix",
-				"sim1"
-			],
-			'data': {
-				'tripinfo': "log/sim1log.trip.xml",
-				'routes': [
-					{
-						"from": "gneE0",
-						"to": "gneE2",
-						"current_expected_time": 0
-					}
-				]
-
-			}
-		},
-		{
-			'name': 'sim2',
-
-			'settings': [
-				simulation_settings['sumo_gui'],
-				"-c",
-				"grid.sumocfg",
-				"--window-size",
-				simulation_settings['width'] + "," + simulation_settings['height'],
-				"--window-pos",
-				simulation_settings['width'] + ",0",
-				"--start",
-				"true",
-				"--output-prefix",
-				"sim2"
-			],
-			'data': {
-				'tripinfo': "log/sim2log.trip.xml",
-				'routes': [
-					{
-						"from": "gneE0",
-						"to": "gneE2",
-						"current_expected_time": 0
-					}
-				]
-
-			}
-
-		}
-	]
 
 
 last_vehicle_id = 0
@@ -313,8 +248,8 @@ class Simulation:
 
 
 def main():
-	simulation_settings = init_simulation_settings()  # TODO import external settings
-	simulation_init = init_simulations(simulation_settings)
+	gui_settings = simulation_settings.init_gui_settings(sumo_home)
+	simulation_init = simulation_settings.init_simulation_settings(gui_settings)
 	simulations = []
 	simulations.append(Simulation(simulation_init[0]))
 	simulations.append(Simulation(simulation_init[1]))
@@ -339,7 +274,7 @@ def main():
 				global_zoom, global_offset = simulation.sync_guis(global_zoom, global_offset)
 				# ---------------------------------------------------------------
 
-				if step % simulation_settings['route_correction_num_steps'] == 0:
+				if step % gui_settings['route_correction_num_steps'] == 0:
 					# --------------------------------------------------------------- tripinfo xml
 					simulation.getTripinfo()
 					# --------------------------------------------------------------- subscribe to currently loaded vehicles
