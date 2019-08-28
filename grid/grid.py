@@ -149,6 +149,10 @@ class Simulation:
 		self.vehicles = []
 		self.lanes_ids = []
 		self.edges_ids = []
+		self.total_duration = 0
+		self.average_duration = 0
+		self.average_relative_timeloss = 0
+
 	def start(self):
 		traci.start(self.start_command, label=self.simulationName)
 		self.lanes_ids = traci.lane.getIDList()
@@ -189,9 +193,17 @@ class Simulation:
 					xml_string = "/n".join((xml_string, "</tripinfos>"))
 					open_data = minidom.parseString(xml_string)
 					intervals_open = open_data.getElementsByTagName('tripinfo')
-					self.total_timeloss += float(intervals_open[0].getAttribute('timeLoss'))
+					timeloss = float(intervals_open[0].getAttribute('timeLoss'))
+					duration = float(intervals_open[0].getAttribute('duration'))
+					self.total_timeloss += timeloss
+					self.total_duration += duration
+					relative_timeloss = timeloss / duration
+					self.average_relative_timeloss = ((self.average_relative_timeloss * (
+							self.total_trips - 1) + relative_timeloss) / self.total_trips)
 
+			self.average_duration = self.total_duration / self.total_trips
 			self.average_timeloss = self.total_timeloss / self.total_trips
+
 		except Exception as e:
 			# print(e)
 			pass
@@ -258,7 +270,7 @@ class Simulation:
 					try:
 						new_route = traci.simulation.findRoute(current_edge, route[len(route) - 1], vType="type1")
 						traci.vehicle.setRoute(vehicle, new_route.edges)
-					except ValueError:
+					except traci.exceptions.TraCIException:
 						traci.vehicle.setColor(vehicle, (1, 1, 1, 255))
 						print("Vehicle stuck")
 		self.averageWaitingTime = self.totalWaitingTime / len(self.vehicles)
@@ -300,9 +312,8 @@ class Simulation:
 		return global_zoom, global_offset
 
 
-
 def main():
-	simulation_settings = init_simulation_settings()        # TODO import external settings
+	simulation_settings = init_simulation_settings()  # TODO import external settings
 	simulation_init = init_simulations(simulation_settings)
 	simulations = []
 	simulations.append(Simulation(simulation_init[0]))
@@ -343,17 +354,22 @@ def main():
 			output_table = [
 				['STEP', step, 'TIME', ''],  # 0
 				['----------', '--------', '----------', '----------'],  # 1
-				[],  # 2
-				[],  # 3
-				[],  # 4
 				['', 'SIM1', 'SIM2', 'DIFF'],  # 5
-				['WAITING', simulations[0].averageWaitingTime, simulations[1].averageWaitingTime,
-				 simulations[0].averageWaitingTime - simulations[1].averageWaitingTime],  # 6
-				['ROUTE', simulations[0].measureRoutes[0]['waitingtime'],
-				 simulations[1].measureRoutes[0]['waitingtime'],
-				 simulations[0].measureRoutes[0]['waitingtime'] - simulations[1].measureRoutes[0]['waitingtime']],  # 7
-				['T_LOSS', simulations[0].average_timeloss, simulations[1].average_timeloss,
-				 simulations[0].average_timeloss - simulations[1].average_timeloss],  # 8
+				['WAITING', '%.2f' % simulations[0].averageWaitingTime, '%.2f' % simulations[1].averageWaitingTime,
+				 '%.2f' % (simulations[0].averageWaitingTime - simulations[1].averageWaitingTime)],  # 6
+				['ROUTE', '%.2f' % simulations[0].measureRoutes[0]['waitingtime'],
+				 '%.2f' % simulations[1].measureRoutes[0]['waitingtime'],
+				 '%.2f' % (simulations[0].measureRoutes[0]['waitingtime'] - simulations[1].measureRoutes[0][
+					 'waitingtime'])],  # 7
+				['TRIPFILE_STATS', '--------', '----------', '----------'],
+				['AVG_DURATION', simulations[0].total_duration, simulations[1].total_duration,
+				 simulations[0].total_duration - simulations[1].total_duration],
+				['AVG_T_LOSS', '%.2f' % simulations[0].average_timeloss, '%.2f' % simulations[1].average_timeloss,
+				 '%.2f' % (simulations[0].average_timeloss - simulations[1].average_timeloss)],  # 8
+				['AVG_REL_DURATION', '%.2f' % simulations[0].average_relative_timeloss,
+				 '%.2f' % simulations[1].average_relative_timeloss,
+				 '%.2f' % (simulations[0].average_relative_timeloss - simulations[1].average_relative_timeloss)],
+
 				[],  # 9
 				['TIMERS', '--------', '----------', '----------']  # 10
 			]
