@@ -1,22 +1,41 @@
 # sumo_parallel
 sumo_parallel is a small script with the intention to **compare sumo simulations on the fly** mainly for demonstration
  purposes. 
-## run
+###requirements
+- python3
+- 
+### run
 to run the grid scenario
 ```
 python3 sumo_parallel.py grid
 ```
 ## Install sumo
-Building SUMO with cmake
+https://sumo.dlr.de/wiki/Installing
 https://sumo.dlr.de/wiki/Installing/Linux_Build#Building_the_SUMO_binaries_with_cmake_.28recommended.29
 
-DEFINE SUMO_HOME !!!
+####DEFINE SUMO_HOME !!!
+
+#####on linux
+get the install directory
+```buildoutcfg
+which sumo
+```
+
+set sumo_home
+```buildoutcfg
+export SUMO_HOME="your/install/directory"
+```
+#####on windows
+https://sumo.dlr.de/wiki/Basics/Basic_Computer_Skills#Windows
+
 ## Create scenario
 to create own scenario, duplicate the grid subfolder and rename it to your scenario name. Set all simulation settings 
 in the subfolder.
 ### Map generation
+
 ####Download map data
 http://download.geofabrik.de/
+
 ####Generate boundaries 
 boundaries easy generate		https://boundingbox.klokantech.com/
 - Prague 

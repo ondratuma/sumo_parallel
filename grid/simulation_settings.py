@@ -1,4 +1,6 @@
 import os
+
+
 def init_gui_settings(sumo_home):
 	return {
 		"width": "750",
@@ -7,8 +9,23 @@ def init_gui_settings(sumo_home):
 		"sumo_gui": os.path.join(sumo_home, 'bin/sumo-gui'),
 		"global_zoom": 100,
 		"global_offset": 100,
-		"route_correction_num_steps": 10
+		"route_correction_num_steps": 10,
+		'measure_routes': [
+			{
+				"from": "gneE0",
+				"to": "gneE2",
+				"current_expected_time": 0
+			}
+		],
+		"deploy_routes": [
+			{
+				'from': "gneE0",
+				'to': "gneE2",
+				'period': 1
+			}
+		]
 	}
+
 def init_simulation_settings(simulation_settings):
 	return [
 		{
@@ -26,21 +43,14 @@ def init_simulation_settings(simulation_settings):
 				"--output-prefix",
 				"sim1"
 			],
+			"deploy_routes": simulation_settings["deploy_routes"],
+			"measure_routes": simulation_settings["measure_routes"],
 			'data': {
 				'tripinfo': "log/sim1log.trip.xml",
-				'routes': [
-					{
-						"from": "gneE0",
-						"to": "gneE2",
-						"current_expected_time": 0
-					}
-				]
-
 			}
 		},
 		{
 			'name': 'sim2',
-
 			'settings': [
 				simulation_settings['sumo_gui'],
 				"-c",
@@ -54,15 +64,11 @@ def init_simulation_settings(simulation_settings):
 				"--output-prefix",
 				"sim2"
 			],
+			"deploy_routes": simulation_settings["deploy_routes"],
+			"measure_routes": simulation_settings["measure_routes"],
 			'data': {
 				'tripinfo': "log/sim2log.trip.xml",
-				'routes': [
-					{
-						"from": "gneE0",
-						"to": "gneE2",
-						"current_expected_time": 0
-					}
-				]
+
 
 			}
 
