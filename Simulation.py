@@ -7,7 +7,10 @@ class Simulation:
 		self.traci = traci
 		self.settings = settings
 		self.start_command = settings['settings']
-		self.tripinfoFile = do_open(settings['data']['tripinfo'])
+		self.tripinfoFilename = settings['data']['tripinfo']
+		self.tripinfoFile = do_open(self.tripinfoFilename)
+		self.edgeDumpFilename = settings['edgedump']
+		self.netfile = settings['netfile']
 		self.simulationName = settings['name']
 		self.measureRoutes = settings['measure_routes']
 		self.deployRoutes = settings['deploy_routes']
@@ -29,7 +32,7 @@ class Simulation:
 		self.total_duration = 0
 		self.average_duration = 0
 		self.average_relative_timeloss = 0
-
+		self.route_correction_num_steps = 10
 	def start(self):
 		self.traci.start(self.start_command, label=self.simulationName)
 		self.lanes_ids = self.traci.lane.getIDList()
@@ -147,7 +150,7 @@ class Simulation:
 					try:
 						new_route = self.traci.simulation.findRoute(current_edge, route[len(route) - 1], vType="type1")
 						self.traci.vehicle.setRoute(vehicle, new_route.edges)
-					except self.traci.exceptions.self.traciException:
+					except self.traci.exceptions.traciException:
 						self.traci.vehicle.setColor(vehicle, (1, 1, 1, 255))
 						print("Vehicle stuck")
 		self.averageWaitingTime = self.totalWaitingTime / len(self.vehicles)

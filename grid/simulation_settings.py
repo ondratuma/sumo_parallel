@@ -1,12 +1,21 @@
 import os
 
-
-def init_gui_settings(sumo_home):
+def both_settings(sumo_home):
 	return {
 		"width": "750",
 		"height": "1080",
 		"sumo_binary": os.path.join(sumo_home, 'bin/sumo'),
 		"sumo_gui": os.path.join(sumo_home, 'bin/sumo-gui'),
+		"edgedump" : "log/log.edgedata.xml",
+		"netfile" : "grid.net.xml",
+		"plot_net_dump" : {
+			"metrics" : [
+				"density",
+				"overlapTraveltime",
+				'occupancy',
+				'waitingTime'
+			]
+		},
 		"global_zoom": 100,
 		"global_offset": 100,
 		"route_correction_num_steps": 10,
@@ -26,7 +35,7 @@ def init_gui_settings(sumo_home):
 		]
 	}
 
-def init_simulation_settings(simulation_settings):
+def each_simulation_settings(simulation_settings):
 	return [
 		{
 			'name': 'sim1',
@@ -43,10 +52,12 @@ def init_simulation_settings(simulation_settings):
 				"--output-prefix",
 				"sim1"
 			],
+			"edgedump": "log/sim1log.edgedata.xml",
+			"netfile": simulation_settings['netfile'],
 			"deploy_routes": simulation_settings["deploy_routes"],
 			"measure_routes": simulation_settings["measure_routes"],
 			'data': {
-				'tripinfo': "log/sim1log.trip.xml",
+				'tripinfo': "log/sim1log.trip.xml"
 			}
 		},
 		{
@@ -64,6 +75,8 @@ def init_simulation_settings(simulation_settings):
 				"--output-prefix",
 				"sim2"
 			],
+			"edgedump": "log/sim2log.edgedata.xml",
+			"netfile": simulation_settings['netfile'],
 			"deploy_routes": simulation_settings["deploy_routes"],
 			"measure_routes": simulation_settings["measure_routes"],
 			'data': {

@@ -6,8 +6,9 @@
             <closingLaneReroute id="C1D1_0"/>
        </interval>  
    </rerouter>
+     <edgeData id="python-basic" file="log/log.edgedata.xml"/>
     <!--
-        <edgeData id="python-basic" file="log/log.edgedata-closed.xml"/>   
+
         <laneData id="python-lane" file="log/log.lanedata-closed.xml"/> 
     -->
     
