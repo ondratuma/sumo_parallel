@@ -113,10 +113,10 @@ def main():
 
 
 	for simulation in simulations:
-		#simulation.start()
-		#simulation.initStaticObjects()
+		simulation.start()
+		simulation.initStaticObjects()
 		pass
-	#simulations_run(simulations)
+	simulations_run(simulations)
 	edgedifFilename = "log/edgeDiff.xml"
 	diffParallelSimulationResults(simulations, edgedifFilename)
 	netfile = simulation_settings_common["netfile"]
